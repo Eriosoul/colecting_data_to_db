@@ -1,0 +1,18 @@
+{
+  "españa": {
+    "idioma": "español",
+    "continente": "Europa"
+  },
+  "francia": {
+    "idioma": "francés",
+    "continente": "Europa"
+  },
+  "puerto rico": {
+    "idioma": "español",
+    "continente": "América del Norte"
+  },
+  "venezuela": {
+    "idioma": "español",
+    "continente": "América del Sur"
+  }
+}
