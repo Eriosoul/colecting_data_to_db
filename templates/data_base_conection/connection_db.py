@@ -55,10 +55,24 @@ class DataBaseMusic:
                         interprete VARCHAR(255),
                         ano INT,
                         semanas INT,
-                        pais VARCHAR(255)
+                        pais VARCHAR(255),
+                        idiomas VARCHAR(255),
+                        continentes VARCHAR(255)
                     )
                 ''')
-            print("\n Tabla 'musica' creada exitosamente.\n")
+            print("\nTabla 'musica' creada exitosamente.\n")
+
+            # Count all records in the table
+            cursor.execute('SELECT COUNT(*) FROM musica')
+            total_records = cursor.fetchone()[0]
+            print(f'Total records in musica table: {total_records}')
+
+            # Count distinct values in the 'semanas' column
+            cursor.execute('SELECT COUNT(DISTINCT semanas) FROM musica')
+            distinct_semanas = cursor.fetchone()[0]
+            print(f'Distinct semanas in musica table: {distinct_semanas}')
+
+            # Update 'ano' for entries with 52 semanas
             cursor.execute('UPDATE musica SET ano = ano + 1 WHERE semanas = 52')
             print("Se ha actualizado el año para las canciones con 52 semanas.")
             self.conn.commit()
@@ -69,19 +83,27 @@ class DataBaseMusic:
     def insert_data(self, data: List[MusicEntry]):
         try:
             cursor = self.conn.cursor()
-            for _ in tqdm(range(50), desc="Insertando datos en tabla 'musica'", unit="iter"):
-                time.sleep(0.1)
+
+            # Check for existing data based on tema and interprete
             for entry in data:
-                cursor.execute(''' 
-                    INSERT INTO musica 
-                    (`tema`, `interprete`, `ano`, `semanas`, `pais`) 
-                    VALUES (%s, %s, %s, %s, %s)
-                ''', (entry.tema, entry.interprete, entry.ano, entry.semanas, entry.pais))
+                cursor.execute('SELECT COUNT(*) FROM musica WHERE tema=%s AND interprete=%s',
+                               (entry.tema, entry.interprete))
+                existing_count = cursor.fetchone()[0]
+
+                if existing_count == 0:
+                    cursor.execute(''' 
+                        INSERT INTO musica 
+                        (`tema`, `interprete`, `ano`, `semanas`, `pais`) 
+                        VALUES (%s, %s, %s, %s, %s)
+                    ''', (entry.tema, entry.interprete, entry.ano, entry.semanas, entry.pais))
+                    print(f'Data inserted for {entry.tema} by {entry.interprete}')
+                else:
+                    print(f'Data already exists for {entry.tema} by {entry.interprete}')
+
             self.conn.commit()
             print("Datos insertados exitosamente.")
         except Error as ex:
             print("Error al introducir los datos: ", ex)
-
     def get_data_sql(self):
         try:
             cursor = self.conn.cursor()

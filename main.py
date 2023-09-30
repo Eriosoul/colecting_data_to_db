@@ -43,7 +43,7 @@
 # ¿Qué canción ha estado más % de tiempo al año como número 1?
 import time
 from tqdm import tqdm
-from DB.connetion_db import main_db
+from templates.data_base_conection.connection_db import main_db
 from templates.request_music import main_request
 
 
@@ -53,35 +53,16 @@ def cls():
 
 def main():
     try:
-        has_executed = False
-        if not has_executed:
-            main_db()
-            print("Mostrando resultado del request")
-            main_request()
-            print("\n realizando insercion a db \n")
-            for _ in tqdm(range(50), desc="Cargando Menu", unit="iter"):
-                time.sleep(0.1)
-            has_executed = True
-        else:
-            print("El código ya fue ejecutado")
+        main_db()
+        print("Mostrando resultado del request")
+        main_request()
+        print("\n realizando insercion a db \n")
+        for _ in tqdm(range(50), desc="Cargando Menu", unit="iter"):
+            time.sleep(0.1)
 
         time.sleep(0.5)
-        cls()
-        while True:
-            print("=== Menu ===")
-            print("1. Ver caca")
-            print("2. Otra opción")
-            print("3. Salir")
-            choice = input("Qué quieres hacer: ")
+        # cls()
 
-            if choice == '1':
-                print("Seleccionaste ver caca")
-            elif choice == '2':
-                print("Seleccionaste otra opción")
-            elif choice == '3':
-                break
-            else:
-                print("Opción inválida. Intenta de nuevo.")
     except Exception as e:
         print("Error", e)
 
