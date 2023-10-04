@@ -37,14 +37,14 @@
 #
 # ¿Cuál es la canción más antigua de la lista?
 # ¿Qué artista aparece más veces en esta lista?
+# Respuesta : SELECT `interprete`, COUNT(`interprete`) AS `interprete` FROM `musica` GROUP BY 1 HAVING COUNT(`interprete`) > 1;
 # ¿Qué país tiene más artistas en esta lista?
 # ¿Cuantas canciones distintas hay por cada idioma?
 # ¿Cuál es el continente con más apariciones en la lista?
 # ¿Qué canción ha estado más % de tiempo al año como número 1?
 import time
 from tqdm import tqdm
-from templates.data_base_conection.connection_db import main_db
-from templates.request_music import main_request
+from templates.data_base_connection.connection_db import main_db
 
 
 def cls():
@@ -54,8 +54,8 @@ def cls():
 def main():
     try:
         main_db()
-        print("Mostrando resultado del request")
-        main_request()
+        # print("Mostrando resultado del request")
+        # main_request()
         print("\n realizando insercion a db \n")
         for _ in tqdm(range(50), desc="Cargando Menu", unit="iter"):
             time.sleep(0.1)

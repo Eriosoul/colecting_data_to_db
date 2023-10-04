@@ -8,3 +8,5 @@ class MusicEntry:
     ano: str
     semanas: str
     pais: str
+    continent: str
+    idiomas: str
