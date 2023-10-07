@@ -93,9 +93,10 @@ class DataBaseMusic:
                 if existing_count == 0:
                     cursor.execute(''' 
                         INSERT INTO musica 
-                        (`tema`, `interprete`, `ano`, `semanas`, `pais`) 
-                        VALUES (%s, %s, %s, %s, %s)
-                    ''', (entry.tema, entry.interprete, entry.ano, entry.semanas, entry.pais))
+                        (`tema`, `interprete`, `ano`, `semanas`, `pais`, `idiomas`,`continentes`) 
+                        VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    ''', (
+                        entry.tema, entry.interprete, entry.ano, entry.semanas, entry.pais,entry.idiomas, entry.continent))
                     print(f'Data inserted for {entry.tema} by {entry.interprete}')
                 else:
                     print(f'Data already exists for {entry.tema} by {entry.interprete}')
@@ -115,7 +116,26 @@ class DataBaseMusic:
             print("Error: ", ex)
             return None
 
+    def get_artist(self):
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute(
+                "SELECT `interprete`, COUNT(`interprete`) AS `count` FROM `musica` GROUP BY `interprete` HAVING COUNT(`interprete`) > 1")
+            return cursor.fetchall()  # Fetch all results
+        except Exception as e:
+            print("Error:", e)
+            return None
 
+    def get_old_song(self):
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute(
+                "SELECT * FROM `musica` ORDER BY `ano` ASC LIMIT 1"
+            )
+            return cursor.fetchall()
+        except Exception as e:
+            print("Error: ",e)
+            return None
 # Inside main_db()
 def main_db():
     m = MusicFromWeb()
@@ -125,6 +145,19 @@ def main_db():
         d.get_conncetion()
         d.insert_data(data_content)
         d.get_data_sql()
+        cancion_vieja = d.get_old_song()
+        if cancion_vieja:
+            for cancion in cancion_vieja:
+                print("¿Cuál es la canción más antigua de la lista?")
+                print(f"La cancion mas antigua fue en el año {cancion[3]}, nombre de la cancion es: {cancion[1]}"
+                      f", y los artistas son {cancion[2]}")
+        artists = d.get_artist()
+        if artists:
+            print("Artist information:")
+            for artist in artists:
+                print("¿Qué artista aparece más veces en esta lista?")
+                print(f"El/la artista: {artist[0]}, se repite: {artist[1]}")
+
         d.close_connection()
     else:
         print("No se pudo obtener datos de la web.")
