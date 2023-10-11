@@ -119,47 +119,6 @@ class MusicFromWeb:
             print(f"Error al realizar la conexion con el servidor: {e}")
             return None
 
-    # def get_geography(self, country):
-    #     continents = ["Europa", "Asia", "África", "América del Norte", "América del Sur", "Oceanía"]
-    #
-    #     formatted_pais = country.replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o").replace(
-    #         "ú", "u")
-    #     formatted_pais = "_".join(formatted_pais.split())
-    #
-    #     # Special case for "Reino Unido"
-    #     if formatted_pais == "Reino_Unido":
-    #         self.geography = 'https://es.wikipedia.org/wiki/Geografia_del_'
-    #     elif formatted_pais == "Canada":
-    #         self.geography = 'https://es.wikipedia.org/wiki/Geografia_de_'
-    #     else:
-    #         self.geography = 'https://es.wikipedia.org/wiki/Geografia_de_'
-    #     link_geography = self.geography + formatted_pais
-    #     try:
-    #         r: Response = requests.get(link_geography)
-    #         if r.status_code != 200:
-    #             print("No se pudo conectar con el servidor")
-    #             return None
-    #
-    #         soup: BeautifulSoup = BeautifulSoup(r.content, "html.parser")
-    #         infobox_tables = soup.find_all("table", class_="infobox")
-    #
-    #         if infobox_tables:
-    #             first_infobox = infobox_tables[0]
-    #             for continent in continents:
-    #                 title_element = first_infobox.find("a", title=continent)
-    #                 if title_element:
-    #                     # Return the continent
-    #                     return title_element.text
-    #
-    #             # Return None if continent is not found
-    #             return None
-    #         else:
-    #             print("No infobox table found for", country)
-    #             return None
-    #
-    #     except Exception as e:
-    #         print("Error con el servidor", e)
-    #         return None
     def get_geography(self, country):
         continents = ["Europa", "Asia", "África", "América del Norte", "América del Sur", "Oceanía"]
         # Define a mapping of countries to continents

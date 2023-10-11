@@ -132,10 +132,103 @@ class DataBaseMusic:
             cursor.execute(
                 "SELECT * FROM `musica` ORDER BY `ano` ASC LIMIT 1"
             )
-            return cursor.fetchall()
+            # return cursor.fetchall()
+            results = cursor.fetchall()
+            if results:
+                for cancion in results:
+                    print("\n¿Cuál es la canción más antigua de la lista?\n")
+                    print(f"La cancion mas antigua fue en el año {cancion[3]}, nombre de la cancion es: {cancion[1]}"
+                          f", y los artistas son {cancion[2]}")
+            return results
         except Exception as e:
             print("Error: ",e)
             return None
+
+    def get_artist_by_country(self):
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute(
+                "SELECT pais, COUNT(DISTINCT interprete) AS num_artistas "
+                "FROM musica "
+                "GROUP BY pais HAVING num_artistas >= 1"
+            )
+
+            num_artistas_deseado = 3
+
+            # Fetch the results
+            results = cursor.fetchall()
+            print("\n¿Qué país tiene más artistas en esta lista?\n")
+            for pais, num_artistas in results:
+                if num_artistas > num_artistas_deseado:
+                    print(f"{pais} tiene más de {num_artistas_deseado} artistas: {num_artistas}")
+
+            return results
+
+        except Error as e:
+            print("Error", e)
+            return None
+
+    def diferent_songs(self):
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute("SELECT idiomas, COUNT(DISTINCT tema) AS num_canciones "
+                           "FROM musica "
+                           "GROUP BY idiomas")
+            results = cursor.fetchall()
+            for idioma in results:
+                print(f"{idioma}")
+            return results
+
+        except Error as e:
+            print("Error", e)
+            return None
+
+    def continents_list(self):
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute(
+                "SELECT continentes, COUNT(*) AS num_apariciones "
+                "FROM musica "
+                "WHERE continentes IS NOT NULL AND continentes != '' GROUP BY continentes ORDER BY num_apariciones DESC"
+            )
+            results = cursor.fetchall()
+
+            # Find the maximum count
+            max_count = max(results, key=lambda x: x[1])[1]
+
+            print("Continent counts:")
+            for continent, count in results:
+                if count == max_count:
+                    print(f"{continent}: {count}")
+
+            return results
+        except Error as e:
+            print("Error:", e)
+            return None
+
+    def song_percentage_in_number_one(self):
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute(
+                "SELECT tema, interprete, semanas, (semanas / 52) * 100 AS porcentaje "
+                "FROM musica "
+                "ORDER BY porcentaje DESC "
+                "LIMIT 1"
+            )
+            result = cursor.fetchone()
+
+            if result:
+                tema, interprete, semanas, porcentaje = result
+                print(f"La canción que ha estado más tiempo como número 1 es '{tema}' de {interprete}.")
+                print(
+                    f"Ha estado en posición número 1 durante {semanas} semanas, que es aproximadamente un {porcentaje:.2f}% del año.")
+
+            return result
+        except Error as e:
+            print("Error:", e)
+            return None
+
+#         SELECT continentes, COUNT(DISTINCT pais) AS num_canciones FROM musica GROUP BY continentes;
 # Inside main_db()
 def main_db():
     m = MusicFromWeb()
@@ -145,19 +238,24 @@ def main_db():
         d.get_conncetion()
         d.insert_data(data_content)
         d.get_data_sql()
-        cancion_vieja = d.get_old_song()
-        if cancion_vieja:
-            for cancion in cancion_vieja:
-                print("¿Cuál es la canción más antigua de la lista?")
-                print(f"La cancion mas antigua fue en el año {cancion[3]}, nombre de la cancion es: {cancion[1]}"
-                      f", y los artistas son {cancion[2]}")
+        d.get_old_song()
+        # cancion_vieja = d.get_old_song()
+        # if cancion_vieja:
+        #     for cancion in cancion_vieja:
+        #         print("\n¿Cuál es la canción más antigua de la lista?\n")
+        #         print(f"La cancion mas antigua fue en el año {cancion[3]}, nombre de la cancion es: {cancion[1]}"
+        #               f", y los artistas son {cancion[2]}")
         artists = d.get_artist()
         if artists:
             print("Artist information:")
             for artist in artists:
-                print("¿Qué artista aparece más veces en esta lista?")
+                print("\n¿Qué artista aparece más veces en esta lista?\n")
                 print(f"El/la artista: {artist[0]}, se repite: {artist[1]}")
-
+        artistas_in_country = d.get_artist_by_country()
+        print(artistas_in_country)
+        d.diferent_songs()
+        d.continents_list()
+        d.song_percentage_in_number_one()
         d.close_connection()
     else:
         print("No se pudo obtener datos de la web.")
