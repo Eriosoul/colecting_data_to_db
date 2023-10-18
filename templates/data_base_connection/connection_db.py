@@ -1,3 +1,4 @@
+import sys
 import time
 import mysql.connector
 from mysql.connector import Error
@@ -15,7 +16,7 @@ class DataBaseMusic:
             port=3306,
             user="root",
             password="",
-            database="ejercicio5py"
+            database="ejercicio7py"
         )
 
     def get_conncetion(self):
@@ -121,7 +122,13 @@ class DataBaseMusic:
             cursor = self.conn.cursor()
             cursor.execute(
                 "SELECT `interprete`, COUNT(`interprete`) AS `count` FROM `musica` GROUP BY `interprete` HAVING COUNT(`interprete`) > 1")
-            return cursor.fetchall()  # Fetch all results
+            artists = cursor.fetchall()  # Fetch all results
+            if artists:
+                print("Artist information:\n")
+                for artist in artists:
+                    print("¿Qué artista aparece más veces en esta lista?\n")
+                    print(f"El/la artista: {artist[0]}, se repite: {artist[1]}")
+            return artists
         except Exception as e:
             print("Error:", e)
             return None
@@ -160,7 +167,7 @@ class DataBaseMusic:
             print("\n¿Qué país tiene más artistas en esta lista?\n")
             for pais, num_artistas in results:
                 if num_artistas > num_artistas_deseado:
-                    print(f"{pais} tiene más de {num_artistas_deseado} artistas: {num_artistas}")
+                    print(f"{pais} tiene artistas: {num_artistas} en la lista")
 
             return results
 
@@ -176,7 +183,7 @@ class DataBaseMusic:
                            "GROUP BY idiomas")
             results = cursor.fetchall()
             for idioma in results:
-                print(f"{idioma}")
+                print(f"Estos son los idiomas: {idioma}, aparecen en la lista")
             return results
 
         except Error as e:
@@ -228,8 +235,7 @@ class DataBaseMusic:
             print("Error:", e)
             return None
 
-#         SELECT continentes, COUNT(DISTINCT pais) AS num_canciones FROM musica GROUP BY continentes;
-# Inside main_db()
+
 def main_db():
     m = MusicFromWeb()
     data_content = m.get_info()
@@ -238,24 +244,35 @@ def main_db():
         d.get_conncetion()
         d.insert_data(data_content)
         d.get_data_sql()
-        d.get_old_song()
-        # cancion_vieja = d.get_old_song()
-        # if cancion_vieja:
-        #     for cancion in cancion_vieja:
-        #         print("\n¿Cuál es la canción más antigua de la lista?\n")
-        #         print(f"La cancion mas antigua fue en el año {cancion[3]}, nombre de la cancion es: {cancion[1]}"
-        #               f", y los artistas son {cancion[2]}")
-        artists = d.get_artist()
-        if artists:
-            print("Artist information:")
-            for artist in artists:
-                print("\n¿Qué artista aparece más veces en esta lista?\n")
-                print(f"El/la artista: {artist[0]}, se repite: {artist[1]}")
-        artistas_in_country = d.get_artist_by_country()
-        print(artistas_in_country)
-        d.diferent_songs()
-        d.continents_list()
-        d.song_percentage_in_number_one()
-        d.close_connection()
+        for _ in tqdm(range(50), desc="Cargando Menu", unit="iter"):
+            time.sleep(0.1)
+        while True:
+            print("\n\n========= MENU ======== ")
+            print("1. ¿Qué artista aparece más veces en esta lista?")
+            print("2. ¿Qué artista aparece más veces en esta lista?")
+            print("3. ¿Qué país tiene más artistas en esta lista?")
+            print("4. ¿Cuantas canciones distintas hay por cada idioma?")
+            print("5. ¿Cuál es el continente con más apariciones en la lista?")
+            print("6. ¿Qué canción ha estado más % de tiempo al año como número 1?")
+            print("7. Salir")
+            option = int(input("Selecciona una opcion: "))
+
+            if option == 1:
+                d.get_old_song()
+            elif option == 2:
+                d.get_artist()
+            elif option == 3:
+                d.get_artist_by_country()
+            elif option == 4:
+                d.diferent_songs()
+            elif option == 5:
+                d.continents_list()
+            elif option == 6:
+                d.song_percentage_in_number_one()
+            elif option == 7:
+                d.close_connection()
+                sys.exit(0)
+            else:
+                print("Opcion invalida", option)
     else:
         print("No se pudo obtener datos de la web.")

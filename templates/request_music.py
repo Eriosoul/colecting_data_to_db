@@ -1,5 +1,8 @@
 import re
+import time
+
 import requests
+from tqdm import tqdm
 from requests import Response
 from bs4 import BeautifulSoup
 from templates.lb.data_class_music import MusicEntry
@@ -134,12 +137,10 @@ class MusicFromWeb:
         if country in country_to_continent:
             return country_to_continent[country]
 
-        # If no direct mapping, use the previous logic to fetch from Wikipedia
         formatted_pais = country.replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o").replace(
             "ú", "u")
         formatted_pais = "_".join(formatted_pais.split())
 
-        # Special case for "Reino Unido"
         if formatted_pais == "Reino_Unido":
             self.geography = 'https://es.wikipedia.org/wiki/Geografia_del_'
         elif formatted_pais == "Canada":
@@ -161,10 +162,8 @@ class MusicFromWeb:
                 for continent in continents:
                     title_element = first_infobox.find("a", title=continent)
                     if title_element:
-                        # Return the continent
                         return title_element.text
 
-                # Return None if continent is not found
                 return None
             else:
                 print("No infobox table found for", country)
@@ -178,7 +177,9 @@ class MusicFromWeb:
 def main_request():
     m: MusicFromWeb = MusicFromWeb()
     data_content = m.get_info()
-    print(data_content)
+    for _ in tqdm(range(50), desc="Obteniendo datos de la web ...", unit="iter"):
+        time.sleep(0.5)
+        # print(data_content)
     if data_content:
         print("Imprimi las cosas")
         for data in data_content:
