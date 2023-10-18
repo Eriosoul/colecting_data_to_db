@@ -6,7 +6,7 @@ from templates.lb.data_class_music import MusicEntry
 # importo tqdm para realizar un progressbar ya que cuando se crea la tabla queda bonito
 from tqdm import tqdm
 from typing import List
-from templates.request_music import MusicFromWeb
+from templates.scrap.request_music import MusicFromWeb
 
 
 class DataBaseMusic:
@@ -63,12 +63,13 @@ class DataBaseMusic:
                 ''')
             print("\nTabla 'musica' creada exitosamente.\n")
 
-            # Count all records in the table
+            # Count comprobamos todos los datos en la tabla de la base de datos
             cursor.execute('SELECT COUNT(*) FROM musica')
             total_records = cursor.fetchone()[0]
             print(f'Total records in musica table: {total_records}')
 
             # Count distinct values in the 'semanas' column
+            # comprobamos los valores de la columna semanas ya que dice que si selama = 52 equivale a un año
             cursor.execute('SELECT COUNT(DISTINCT semanas) FROM musica')
             distinct_semanas = cursor.fetchone()[0]
             print(f'Distinct semanas in musica table: {distinct_semanas}')
@@ -85,12 +86,16 @@ class DataBaseMusic:
         try:
             cursor = self.conn.cursor()
 
-            # Check for existing data based on tema and interprete
+
+            for _ in tqdm(range(50), desc="Insertando datos en la base de datos: ", unit="iter"):
+                time.sleep(0.1)
+            # Comprobamos los datos de la database para que no sean repetidos
             for entry in data:
+                # selecionamos las columnas unicas que en estecaso para mi son el nomrbe de la cancion y su artista
                 cursor.execute('SELECT COUNT(*) FROM musica WHERE tema=%s AND interprete=%s',
                                (entry.tema, entry.interprete))
                 existing_count = cursor.fetchone()[0]
-
+                # si los datos no exiten despues de la comprobacion se insertan
                 if existing_count == 0:
                     cursor.execute(''' 
                         INSERT INTO musica 
@@ -100,6 +105,7 @@ class DataBaseMusic:
                         entry.tema, entry.interprete, entry.ano, entry.semanas, entry.pais,entry.idiomas, entry.continent))
                     print(f'Data inserted for {entry.tema} by {entry.interprete}')
                 else:
+                    # si no los datos se chequean, en caso de que falte alguno se añadira
                     print(f'Data already exists for {entry.tema} by {entry.interprete}')
 
             self.conn.commit()
@@ -108,10 +114,13 @@ class DataBaseMusic:
             print("Error al introducir los datos: ", ex)
     def get_data_sql(self):
         try:
+            # Comprobamos el contenido total de la tabla
             cursor = self.conn.cursor()
             cursor.execute('SELECT COUNT(*) FROM musica')
             count = cursor.fetchone()[0]
-            print(f'Total rows in musica table: {count}')
+            for _ in tqdm(range(50), desc="Comprobando total de contenido: ", unit="iter"):
+                time.sleep(0.1)
+            print(f'Total columnas en la tabla musica: {count}')
             return count
         except Error as ex:
             print("Error: ", ex)
@@ -119,6 +128,7 @@ class DataBaseMusic:
 
     def get_artist(self):
         try:
+            # selecion del artista que mas aparece en la lista, solo se considera el primer artista de la lista
             cursor = self.conn.cursor()
             cursor.execute(
                 "SELECT `interprete`, COUNT(`interprete`) AS `count` FROM `musica` GROUP BY `interprete` HAVING COUNT(`interprete`) > 1")
@@ -135,6 +145,7 @@ class DataBaseMusic:
 
     def get_old_song(self):
         try:
+            # obteniendo la cancion mas antigua, buscando por la columna año
             cursor = self.conn.cursor()
             cursor.execute(
                 "SELECT * FROM `musica` ORDER BY `ano` ASC LIMIT 1"
@@ -153,6 +164,7 @@ class DataBaseMusic:
 
     def get_artist_by_country(self):
         try:
+            # Comprobando el numero de artistas de la lista
             cursor = self.conn.cursor()
             cursor.execute(
                 "SELECT pais, COUNT(DISTINCT interprete) AS num_artistas "
@@ -177,11 +189,13 @@ class DataBaseMusic:
 
     def diferent_songs(self):
         try:
+            # Comprobamos la row de idiomas y hacemos un count de cuantas veces aparece en la lista
             cursor = self.conn.cursor()
             cursor.execute("SELECT idiomas, COUNT(DISTINCT tema) AS num_canciones "
                            "FROM musica "
                            "GROUP BY idiomas")
             results = cursor.fetchall()
+            print("¿Cuantas canciones distintas hay por cada idioma?")
             for idioma in results:
                 print(f"Estos son los idiomas: {idioma}, aparecen en la lista")
             return results
@@ -192,6 +206,7 @@ class DataBaseMusic:
 
     def continents_list(self):
         try:
+            # Buscanos en la row continentes y hacemos algo parecido a la funcion anterior
             cursor = self.conn.cursor()
             cursor.execute(
                 "SELECT continentes, COUNT(*) AS num_apariciones "
@@ -201,9 +216,9 @@ class DataBaseMusic:
             results = cursor.fetchall()
 
             # Find the maximum count
+            # Para poder encontrar el maximo y uso lamba para indicar el maximo y creo una tupla
             max_count = max(results, key=lambda x: x[1])[1]
-
-            print("Continent counts:")
+            print("¿Cuál es el continente con más apariciones en la lista?")
             for continent, count in results:
                 if count == max_count:
                     print(f"{continent}: {count}")
@@ -215,6 +230,8 @@ class DataBaseMusic:
 
     def song_percentage_in_number_one(self):
         try:
+            # Obtenemos el numero de semanas, y se procede a realizar una operacion matematica para comprobar el
+            # porcentaje de cuanto mas tiempo permanecio en la lista
             cursor = self.conn.cursor()
             cursor.execute(
                 "SELECT tema, interprete, semanas, (semanas / 52) * 100 AS porcentaje "
@@ -254,7 +271,7 @@ def main_db():
             print("4. ¿Cuantas canciones distintas hay por cada idioma?")
             print("5. ¿Cuál es el continente con más apariciones en la lista?")
             print("6. ¿Qué canción ha estado más % de tiempo al año como número 1?")
-            print("7. Salir")
+            print("7. Salir...")
             option = int(input("Selecciona una opcion: "))
 
             if option == 1:

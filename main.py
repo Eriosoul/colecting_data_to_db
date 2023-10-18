@@ -1,11 +1,5 @@
 import time
-from tqdm import tqdm
 from templates.data_base_connection.connection_db import main_db
-
-
-def cls():
-    print('\n' * 20)
-
 
 def main():
     try:
